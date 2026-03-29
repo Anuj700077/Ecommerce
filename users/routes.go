@@ -1,4 +1,4 @@
-package users
+package Users
 
 import "github.com/gin-gonic/gin"
 
@@ -8,5 +8,6 @@ func UserRoutes(r *gin.RouterGroup) {
 		return
 	}
 
-	r.POST("/register", Register)
+	r.POST("/send-otp", SendOTP)
+	r.POST("/verify-otp", VerifyOTPAndRegisterHandler)
 }

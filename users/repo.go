@@ -1,4 +1,4 @@
-package users
+package Users
 
 import (
 	"errors"
@@ -17,7 +17,19 @@ func CreateUser(user *User) error {
 		return errors.New("user data is empty")
 	}
 
-	err := database.DB.Create(user).Error
+	// Raw SQL Insert Query
+	query := `
+	INSERT INTO users (name, email, phone, password)
+	VALUES (?, ?, ?, ?)
+	`
+
+	err := database.DB.Exec(query,
+		user.Name,
+		user.Email,
+		user.Phone,
+		user.Password,
+	).Error
+
 	if err != nil {
 		log.Println("Error inserting user:", err)
 		return err

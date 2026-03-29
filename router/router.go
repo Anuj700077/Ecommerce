@@ -17,13 +17,10 @@ func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
 	r.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "Server is running ",
-		})
+		c.JSON(200, gin.H{"message": "Server is running "})
 	})
 
 	api := r.Group("/api")
-
 	users.UserRoutes(api)
 	return r
 }
