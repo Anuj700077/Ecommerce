@@ -17,7 +17,7 @@ func CreateUser(user *User) error {
 		return errors.New("user data is empty")
 	}
 
-	// Raw SQL Insert Query
+	
 	query := `
 	INSERT INTO users (name, email, phone, password)
 	VALUES (?, ?, ?, ?)

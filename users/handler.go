@@ -6,32 +6,40 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Send OTP Handler
 func SendOTP(c *gin.Context) {
 
 	var req OTPRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format. Please send proper JSON."})
 		return
 	}
 
 	err := SendOTPService(req.Email)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+
+		switch err {
+
+		case ErrEmailRequired:
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Email is required. Please provide your email address."})
+
+		case ErrInvalidEmail:
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email format. Please enter a valid email. like example123@gmail.com."})
+
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong. Please try again later."})
+		}
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"message": "OTP sent successfully"})
 }
 
-// Verify OTP + Register Handler
 func VerifyOTPAndRegisterHandler(c *gin.Context) {
 
 	var req VerifyRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format. Please send proper JSON."})
 		return
 	}
 
@@ -44,9 +52,22 @@ func VerifyOTPAndRegisterHandler(c *gin.Context) {
 
 	err := VerifyOTPAndRegister(&user, req.OTP)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+
+		switch err {
+
+		case ErrFieldsMissing:
+			c.JSON(http.StatusBadRequest, gin.H{"error": "All fields are required. Please fill all details."})
+
+		case ErrInvalidEmail:
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email format."})
+
+		case ErrInvalidOTP:
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid OTP. Please check and try again."})
+
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Registration failed. Please try again later."})
+		}
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
 }
