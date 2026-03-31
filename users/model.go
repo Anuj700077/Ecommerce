@@ -1,5 +1,7 @@
 package Users
 
+import "time"
+
 type User struct {
 	ID       uint   `json:"id"`
 	Name     string `json:"name"`
@@ -20,4 +22,9 @@ type VerifyRequest struct {
 	Phone    string `json:"phone"`
 	Password string `json:"password"`
 	OTP      string `json:"otp"`
+}
+//Here OTp expire 
+type OTPData struct {
+	Code      string
+	ExpiresAt time.Time
 }

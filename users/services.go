@@ -9,25 +9,32 @@ import (
 	"time"
 )
 
-var otpStore = make(map[string]string)
+// In this variables In-memory OTP store
+var otpStore = make(map[string]OTPData)
 
+// These are the Custom Errors
 var (
 	ErrEmailRequired = errors.New("EMAIL_REQUIRED")
 	ErrInvalidEmail  = errors.New("INVALID_EMAIL_FORMAT")
 	ErrInvalidOTP    = errors.New("INVALID_OTP")
 	ErrFieldsMissing = errors.New("FIELDS_MISSING")
+	ErrOTPExpired    = errors.New("OTP_EXPIRED")
+	ErrOTPNotFound   = errors.New("OTP_NOT_FOUND")
 )
 
+// this function is for Email validation
 func isValidEmail(email string) bool {
 	_, err := mail.ParseAddress(email)
 	return err == nil
 }
 
+// This function is for Generate OTP
 func generateOTP() string {
 	rand.Seed(time.Now().UnixNano())
 	return fmt.Sprintf("%06d", rand.Intn(1000000))
 }
 
+// Here in this The OTP will send
 func SendOTPService(email string) error {
 
 	if email == "" {
@@ -39,21 +46,40 @@ func SendOTPService(email string) error {
 	}
 
 	otp := generateOTP()
-	otpStore[email] = otp
+
+	otpStore[email] = OTPData{
+		Code:      otp,
+		ExpiresAt: time.Now().Add(30 * time.Second), // ⏳ expiry
+	}
 
 	log.Println("OTP for", email, "is:", otp)
 
 	return nil
 }
 
-func verifyOTP(email, otp string) bool {
-	storedOTP, exists := otpStore[email]
+// This function is for Verify the  OTP
+func verifyOTP(email, otp string) error {
+
+	data, exists := otpStore[email]
 	if !exists {
-		return false
+		return ErrOTPNotFound
 	}
-	return storedOTP == otp
+
+	//here it checks the Expiry
+	if time.Now().After(data.ExpiresAt) {
+		delete(otpStore, email)
+		return ErrOTPExpired
+	}
+
+	// it is for Wrong OTP
+	if data.Code != otp {
+		return ErrInvalidOTP
+	}
+
+	return nil
 }
 
+// This fucntion is created for verify and register the user
 func VerifyOTPAndRegister(user *User, otp string) error {
 
 	if user.Name == "" ||
@@ -67,17 +93,19 @@ func VerifyOTPAndRegister(user *User, otp string) error {
 		return ErrInvalidEmail
 	}
 
-	if !verifyOTP(user.Email, otp) {
-		return ErrInvalidOTP
-	}
-
-	// Save user
-	err := CreateUser(user)
+	// here it Verify the  OTP
+	err := verifyOTP(user.Email, otp)
 	if err != nil {
 		return err
 	}
 
-	// Here...Remove OTP after success
+	// here Save user
+	err = CreateUser(user)
+	if err != nil {
+		return err
+	}
+
+	// Remove OTP after success
 	delete(otpStore, user.Email)
 
 	return nil

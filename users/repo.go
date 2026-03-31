@@ -17,10 +17,9 @@ func CreateUser(user *User) error {
 		return errors.New("user data is empty")
 	}
 
-	
 	query := `
 	INSERT INTO users (name, email, phone, password)
-	VALUES (?, ?, ?, ?)
+	VALUES ($1, $2, $3, $4)
 	`
 
 	err := database.DB.Exec(query,

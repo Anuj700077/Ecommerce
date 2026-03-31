@@ -24,16 +24,19 @@ func SendOTP(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Email is required. Please provide your email address."})
 
 		case ErrInvalidEmail:
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email format. Please enter a valid email. like example123@gmail.com."})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email format. Please enter a valid email."})
 
 		default:
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong. Please try again later."})
 		}
+
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "OTP sent successfully"})
 }
 
+// Verify OTP + Register Handler
 func VerifyOTPAndRegisterHandler(c *gin.Context) {
 
 	var req VerifyRequest
@@ -56,18 +59,26 @@ func VerifyOTPAndRegisterHandler(c *gin.Context) {
 		switch err {
 
 		case ErrFieldsMissing:
-			c.JSON(http.StatusBadRequest, gin.H{"error": "All fields are required. Please fill all details."})
+			c.JSON(http.StatusBadRequest, gin.H{"error": " Please fill all details."})
 
 		case ErrInvalidEmail:
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email format."})
 
 		case ErrInvalidOTP:
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid OTP. Please check and try again."})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid OTP. Please check...."})
+
+		case ErrOTPExpired:
+			c.JSON(http.StatusBadRequest, gin.H{"error": "OTP has expired. Please request a new one."})
+
+		case ErrOTPNotFound:
+			c.JSON(http.StatusBadRequest, gin.H{"error": "No OTP found. Please request OTP first."})
 
 		default:
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Registration failed. Please try again later."})
 		}
+
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
 }

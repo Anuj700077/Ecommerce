@@ -1,6 +1,7 @@
 package router
 
 import (
+	products "Ecommerce/Products"
 	users "Ecommerce/Users"
 	"log"
 	"os"
@@ -21,7 +22,10 @@ func SetupRouter() *gin.Engine {
 	})
 
 	api := r.Group("/api")
+
 	users.UserRoutes(api)
+	products.ProductRoutes(api)
+
 	return r
 }
 

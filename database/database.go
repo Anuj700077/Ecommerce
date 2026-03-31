@@ -11,7 +11,8 @@ import (
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
+var DB *gorm.DB      // GORM (optional)
+var SQLDB *sql.DB   // ✅ RAW SQL (IMPORTANT)
 
 func ConnectDatabase() {
 
@@ -22,7 +23,7 @@ func ConnectDatabase() {
 	dbname := os.Getenv("DB_NAME")
 	sslmode := os.Getenv("DB_SSLMODE")
 
-	
+	// Step 1: Connect to default postgres DB
 	psqlInfo := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=postgres port=%s sslmode=%s",
 		host, user, password, port, sslmode,
@@ -30,20 +31,18 @@ func ConnectDatabase() {
 
 	sqlDB, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
-		log.Printf("Failed to connect to PostgreSQL server: %v", err)
+		log.Fatal("Failed to connect PostgreSQL:", err)
 	}
 
-
+	// Create DB if not exists
 	_, err = sqlDB.Exec("CREATE DATABASE " + dbname)
 	if err != nil {
-		log.Println("Database may already exist or error occurred:", err)
-	} else {
-		log.Println("Database created successfully")
+		log.Println("Database may already exist:", err)
 	}
 
 	sqlDB.Close()
 
-	
+	// Step 2: Connect to your DB using GORM
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
 		host, user, password, dbname, port, sslmode,
@@ -51,22 +50,30 @@ func ConnectDatabase() {
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Printf("Unable to connect to database: %v", err)
+		log.Fatal("Unable to connect DB:", err)
 	}
 
 	DB = db
 
-	log.Println("Connected to ecommerce database ")
-}
+	//  IMPORTANT: Get raw SQL DB
+	sqlDB2, err := DB.DB()
+	if err != nil {
+		log.Fatal("Failed to get SQL DB:", err)
+	}
 
+	SQLDB = sqlDB2
+
+	log.Println("Database connected successfully")
+}
 
 func CreateTables() {
 
-	if DB == nil {
-		log.Fatal("Database not connected. Cannot create tables")
+	if SQLDB == nil {
+		log.Fatal("SQLDB not initialized")
 	}
 
-	query := `
+	// Users table
+	userQuery := `
 	CREATE TABLE IF NOT EXISTS users (
 		id SERIAL PRIMARY KEY,
 		name TEXT NOT NULL,
@@ -76,10 +83,25 @@ func CreateTables() {
 	);
 	`
 
-	err := DB.Exec(query).Error
+	_, err := SQLDB.Exec(userQuery)
 	if err != nil {
-		log.Fatalf("Failed to create users table: %v", err)
+		log.Fatal("Failed to create users table:", err)
 	}
 
-	log.Println("Users table is ready")
+	//  Products table
+	productQuery := `
+	CREATE TABLE IF NOT EXISTS products (
+		id SERIAL PRIMARY KEY,
+		name TEXT NOT NULL,
+		description TEXT,
+		price INT NOT NULL
+	);
+	`
+
+	_, err = SQLDB.Exec(productQuery)
+	if err != nil {
+		log.Fatal("Failed to create products table:", err)
+	}
+
+	log.Println("Tables created successfully")
 }
