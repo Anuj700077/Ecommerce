@@ -1,6 +1,7 @@
 package Users
 
 import (
+	"Ecommerce/utils"
 	"errors"
 	"fmt"
 	"log"
@@ -14,12 +15,14 @@ var otpStore = make(map[string]OTPData)
 
 // These are the Custom Errors
 var (
-	ErrEmailRequired = errors.New("EMAIL_REQUIRED")
-	ErrInvalidEmail  = errors.New("INVALID_EMAIL_FORMAT")
-	ErrInvalidOTP    = errors.New("INVALID_OTP")
-	ErrFieldsMissing = errors.New("FIELDS_MISSING")
-	ErrOTPExpired    = errors.New("OTP_EXPIRED")
-	ErrOTPNotFound   = errors.New("OTP_NOT_FOUND")
+	ErrEmailRequired   = errors.New("EMAIL_REQUIRED")
+	ErrInvalidEmail    = errors.New("INVALID_EMAIL_FORMAT")
+	ErrInvalidOTP      = errors.New("INVALID_OTP")
+	ErrFieldsMissing   = errors.New("FIELDS_MISSING")
+	ErrOTPExpired      = errors.New("OTP_EXPIRED")
+	ErrOTPNotFound     = errors.New("OTP_NOT_FOUND")
+	ErrUserNotFound    = errors.New("USER_NOT_FOUND")
+	ErrInvalidPassword = errors.New("INVALID_PASSWORD")
 )
 
 // this function is for Email validation
@@ -99,14 +102,44 @@ func VerifyOTPAndRegister(user *User, otp string) error {
 		return err
 	}
 
-	// here Save user
-	err = CreateUser(user)
+	
+	// Hash password before saving
+	hashedPassword, err := utils.HashPassword(user.Password)
 	if err != nil {
 		return err
 	}
+
+	user.Password = hashedPassword
+
+	err = CreateUser(user)
 
 	// Remove OTP after success
 	delete(otpStore, user.Email)
 
 	return nil
+}
+
+func LoginService(email, password string) (*User, error) {
+
+	if email == "" || password == "" {
+		return nil, ErrFieldsMissing
+	}
+
+	if !isValidEmail(email) {
+		return nil, ErrInvalidEmail
+	}
+
+	// check user exists
+	user, err := GetUserByEmail(email)
+	if err != nil {
+		return nil, ErrUserNotFound
+	}
+
+	// check password (simple compare for now)
+	if !utils.CheckPasswordHash(password, user.Password) {
+	return nil, ErrInvalidPassword
+}
+
+
+	return user, nil
 }

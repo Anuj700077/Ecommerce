@@ -23,8 +23,15 @@ type VerifyRequest struct {
 	Password string `json:"password"`
 	OTP      string `json:"otp"`
 }
-//Here OTp expire 
+
+//Here OTp expire
 type OTPData struct {
 	Code      string
 	ExpiresAt time.Time
+}
+
+// Login Request
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }

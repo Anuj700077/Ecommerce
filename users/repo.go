@@ -36,3 +36,30 @@ func CreateUser(user *User) error {
 
 	return nil
 }
+
+func GetUserByEmail(email string) (*User, error) {
+
+	if database.SQLDB == nil {
+		return nil, errors.New("database not connected")
+	}
+
+	query := `SELECT id, name, email, phone, password FROM users WHERE email=$1`
+
+	row := database.SQLDB.QueryRow(query, email)
+
+	var user User
+
+	err := row.Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.Phone,
+		&user.Password,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
