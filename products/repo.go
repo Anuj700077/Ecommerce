@@ -2,20 +2,48 @@ package Products
 
 import (
 	"Ecommerce/database"
-	"database/sql"
 	"errors"
+	"log"
 )
 
-func GetAllProducts() ([]Product, error) {
+func CreateProduct(product *Product) error {
 
-	
+	if database.SQLDB == nil {
+		return errors.New("database not connected")
+	}
+
+	query := `
+	INSERT INTO products (name, description, price)
+	VALUES ($1, $2, $3)
+	`
+
+	_, err := database.SQLDB.Exec(query,
+		product.Name,
+		product.Description,
+		product.Price,
+	)
+
+	if err != nil {
+		log.Println("Error inserting product:", err)
+		return err
+	}
+
+	return nil
+}
+
+func GetProducts() ([]Product, error) {
+
 	if database.SQLDB == nil {
 		return nil, errors.New("database not connected")
 	}
 
-	query := `SELECT id, name, description, price FROM products`
+	query := `
+	SELECT id, name, description, price, created_at
+	FROM products
+	ORDER BY id DESC
+	`
 
-	rows, err := database.SQLDB.Query(query) 
+	rows, err := database.SQLDB.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -24,20 +52,22 @@ func GetAllProducts() ([]Product, error) {
 	var products []Product
 
 	for rows.Next() {
-		var product Product
+		var p Product
+
 		err := rows.Scan(
-			&product.ID,
-			&product.Name,
-			&product.Description,
-			&product.Price,
+			&p.ID,
+			&p.Name,
+			&p.Description,
+			&p.Price,
+			&p.CreatedAt,
 		)
+
 		if err != nil {
 			return nil, err
 		}
-		products = append(products, product)
+
+		products = append(products, p)
 	}
-	if len(products) == 0 {
-		return nil, sql.ErrNoRows
-	}
+
 	return products, nil
 }

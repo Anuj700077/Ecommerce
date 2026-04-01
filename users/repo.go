@@ -17,9 +17,14 @@ func CreateUser(user *User) error {
 		return errors.New("user data is empty")
 	}
 
+	//  IMPORTANT: set default role if empty
+	if user.Role == "" {
+		user.Role = "user"
+	}
+
 	query := `
-	INSERT INTO users (name, email, phone, password)
-	VALUES ($1, $2, $3, $4)
+	INSERT INTO users (name, email, phone, password, role)
+	VALUES ($1, $2, $3, $4, $5)
 	`
 
 	err := database.DB.Exec(query,
@@ -27,6 +32,7 @@ func CreateUser(user *User) error {
 		user.Email,
 		user.Phone,
 		user.Password,
+		user.Role,
 	).Error
 
 	if err != nil {
@@ -43,7 +49,7 @@ func GetUserByEmail(email string) (*User, error) {
 		return nil, errors.New("database not connected")
 	}
 
-	query := `SELECT id, name, email, phone, password FROM users WHERE email=$1`
+	query := `SELECT id, name, email, phone, password, role FROM users WHERE email=$1`
 
 	row := database.SQLDB.QueryRow(query, email)
 
@@ -55,6 +61,7 @@ func GetUserByEmail(email string) (*User, error) {
 		&user.Email,
 		&user.Phone,
 		&user.Password,
+		&user.Role,
 	)
 
 	if err != nil {

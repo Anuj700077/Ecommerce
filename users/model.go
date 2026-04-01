@@ -7,15 +7,16 @@ type User struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Phone    string `json:"phone"`
-	Password string `json:"password"`
+	Password string `json:"-"`
+	Role     string `json:"role"`
 }
 
-// Here...Request for sending OTP
+// OTP Request
 type OTPRequest struct {
 	Email string `json:"email"`
 }
 
-// Here...Request for verifying OTP + register
+// Verify + Register
 type VerifyRequest struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
@@ -24,13 +25,13 @@ type VerifyRequest struct {
 	OTP      string `json:"otp"`
 }
 
-//Here OTp expire
+// OTP store
 type OTPData struct {
 	Code      string
 	ExpiresAt time.Time
 }
 
-// Login Request
+// Login
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`

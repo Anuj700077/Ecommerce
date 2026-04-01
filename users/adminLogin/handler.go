@@ -2,6 +2,7 @@ package adminlogin
 
 import (
 	"Ecommerce/Users"
+	"Ecommerce/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -33,5 +34,12 @@ func AdminLoginHandler(c *gin.Context) {
 		}
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Admin login successful"})
+
+	token, err := utils.GenerateToken(req.Email, "admin")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Admin login successful", "token": token})
 }

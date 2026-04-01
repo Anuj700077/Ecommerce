@@ -1,12 +1,24 @@
 package Products
 
-import "github.com/gin-gonic/gin"
+import (
+	"Ecommerce/middleware"
+
+	"github.com/gin-gonic/gin"
+)
 
 func ProductRoutes(rg *gin.RouterGroup) {
 
+	//here user can see the products without login 
 	products := rg.Group("/products")
+	{
+		products.GET("", GetAllProducts)
+	}
 
-	
-	products.GET("", GetProducts)
-	products.POST("",AddProducts)
+//this route is for admin
+	admin := rg.Group("/admin")
+	admin.Use(middleware.AuthMiddleware(), middleware.AdminOnly())
+
+	{
+		admin.POST("/product", CreateProducts) 
+	}
 }

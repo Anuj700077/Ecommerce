@@ -30,7 +30,10 @@ func SetupRouter() *gin.Engine {
 	otpandregister.UserRoutes(api)
 	userlogin.Userlogin(api)
 	adminlogin.UserLogin(api)
+
+
 	products.ProductRoutes(api)
+	
 
 	return r
 }

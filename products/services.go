@@ -1,25 +1,36 @@
 package Products
 
 import (
-	"database/sql"
 	"errors"
 )
 
+var (
+	ErrInvalidProduct = errors.New("INVALID_PRODUCT_DATA")
+)
 
 
+func CreateProductService(product *Product) error {
 
+	if product.Name == "" || product.Price <= 0 {
+		return ErrInvalidProduct
+	}
+
+	return CreateProduct(product)
+}
 
 var ErrNoProductsFound = errors.New("NO_PRODUCTS")
 
-func GetProductsService() ([]Product, error) {
+func GetProduct() ([]Product, error) {
 
-	products, err := GetAllProducts()
+	products, err := GetProducts()
 	if err != nil {
-
-		if err == sql.ErrNoRows {
-			return nil, ErrNoProductsFound
-		}
 		return nil, err
 	}
+
+	
+	if len(products) == 0 {
+		return nil, ErrNoProductsFound
+	}
+
 	return products, nil
 }

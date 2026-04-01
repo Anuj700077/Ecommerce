@@ -52,6 +52,7 @@ func VerifyOTPAndRegisterHandler(c *gin.Context) {
 		Email:    req.Email,
 		Phone:    req.Phone,
 		Password: req.Password,
+		Role:     "user",
 	}
 
 	err := VerifyOTPAndRegister(&user, req.OTP)

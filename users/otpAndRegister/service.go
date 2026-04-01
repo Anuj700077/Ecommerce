@@ -91,13 +91,13 @@ func VerifyOTPAndRegister(user *Users.User, otp string) error {
 		return ErrInvalidEmail
 	}
 
-	// here it Verify the  OTP
+	// ✅ Verify OTP
 	err := verifyOTP(user.Email, otp)
 	if err != nil {
 		return err
 	}
 
-	//In this line password hashing technique done
+	// ✅ Hash password
 	hashedPassword, err := utils.HashPassword(user.Password)
 	if err != nil {
 		return err
@@ -105,9 +105,21 @@ func VerifyOTPAndRegister(user *Users.User, otp string) error {
 
 	user.Password = hashedPassword
 
-	err = Users.CreateUser(user)
+	// 🔥 VERY IMPORTANT FIX
+	if user.Role == "" {
+		user.Role = "user"
+	}
 
-	// Remove OTP after success
+	// 🔍 Debug (optional but recommended)
+	log.Println("Saving user with role:", user.Role)
+
+	// ✅ Save user
+	err = Users.CreateUser(user)
+	if err != nil {
+		return err
+	}
+
+	// ✅ Remove OTP after success
 	delete(otpStore, user.Email)
 
 	return nil

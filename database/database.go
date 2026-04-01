@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB      // GORM (optional)
-var SQLDB *sql.DB   // ✅ RAW SQL (IMPORTANT)
+var DB *gorm.DB   // GORM
+var SQLDB *sql.DB // RAW SQL
 
 func ConnectDatabase() {
 
@@ -23,7 +24,7 @@ func ConnectDatabase() {
 	dbname := os.Getenv("DB_NAME")
 	sslmode := os.Getenv("DB_SSLMODE")
 
-	// Step 1: Connect to default postgres DB
+	// 🔹 Step 1: Connect to default postgres DB
 	psqlInfo := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=postgres port=%s sslmode=%s",
 		host, user, password, port, sslmode,
@@ -34,15 +35,21 @@ func ConnectDatabase() {
 		log.Fatal("Failed to connect PostgreSQL:", err)
 	}
 
-	// Create DB if not exists
-	_, err = sqlDB.Exec("CREATE DATABASE " + dbname)
+	// 🔹 Check connection
+	err = sqlDB.Ping()
 	if err != nil {
-		log.Println("Database may already exist:", err)
+		log.Fatal("Database not reachable:", err)
+	}
+
+	// 🔹 Create DB if not exists
+	_, err = sqlDB.Exec("CREATE DATABASE " + dbname)
+	if err != nil && !strings.Contains(err.Error(), "already exists") {
+		log.Fatal("Failed to create database:", err)
 	}
 
 	sqlDB.Close()
 
-	// Step 2: Connect to your DB using GORM
+	// 🔹 Step 2: Connect to actual DB using GORM
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
 		host, user, password, dbname, port, sslmode,
@@ -55,13 +62,17 @@ func ConnectDatabase() {
 
 	DB = db
 
-	//  IMPORTANT: Get raw SQL DB
+	// 🔹 Get RAW SQL DB
 	sqlDB2, err := DB.DB()
 	if err != nil {
 		log.Fatal("Failed to get SQL DB:", err)
 	}
 
 	SQLDB = sqlDB2
+
+	// 🔹 Connection pool (important)
+	SQLDB.SetMaxOpenConns(10)
+	SQLDB.SetMaxIdleConns(5)
 
 	log.Println("Database connected successfully")
 }
@@ -72,14 +83,14 @@ func CreateTables() {
 		log.Fatal("SQLDB not initialized")
 	}
 
-	// Users table
 	userQuery := `
 	CREATE TABLE IF NOT EXISTS users (
 		id SERIAL PRIMARY KEY,
 		name TEXT NOT NULL,
 		email TEXT UNIQUE NOT NULL,
 		phone TEXT UNIQUE NOT NULL,
-		password TEXT NOT NULL
+		password TEXT NOT NULL,
+		role TEXT DEFAULT 'user'
 	);
 	`
 
@@ -88,15 +99,15 @@ func CreateTables() {
 		log.Fatal("Failed to create users table:", err)
 	}
 
-	//  Products table
 	productQuery := `
-	CREATE TABLE IF NOT EXISTS products (
-		id SERIAL PRIMARY KEY,
-		name TEXT NOT NULL,
-		description TEXT,
-		price INT NOT NULL
-	);
-	`
+CREATE TABLE IF NOT EXISTS products (
+	id SERIAL PRIMARY KEY,
+	name TEXT NOT NULL,
+	description TEXT,
+	price INT NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+`
 
 	_, err = SQLDB.Exec(productQuery)
 	if err != nil {
