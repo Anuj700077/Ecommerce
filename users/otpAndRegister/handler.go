@@ -1,6 +1,7 @@
-package Users
+package otpandregister
 
 import (
+	"Ecommerce/Users"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -8,7 +9,7 @@ import (
 
 func SendOTP(c *gin.Context) {
 
-	var req OTPRequest
+	var req Users.OTPRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format. Please send proper JSON."})
@@ -39,14 +40,14 @@ func SendOTP(c *gin.Context) {
 // Verify OTP + Register Handler
 func VerifyOTPAndRegisterHandler(c *gin.Context) {
 
-	var req VerifyRequest
+	var req Users.VerifyRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format. Please send proper JSON."})
 		return
 	}
 
-	user := User{
+	user := Users.User{
 		Name:     req.Name,
 		Email:    req.Email,
 		Phone:    req.Phone,
@@ -82,7 +83,3 @@ func VerifyOTPAndRegisterHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
 }
-
-
-
-

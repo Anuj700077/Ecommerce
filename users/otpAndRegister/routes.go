@@ -1,4 +1,4 @@
-package Users
+package otpandregister
 
 import "github.com/gin-gonic/gin"
 

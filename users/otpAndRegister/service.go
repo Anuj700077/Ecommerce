@@ -1,6 +1,7 @@
-package Users
+package otpandregister
 
 import (
+	"Ecommerce/Users"
 	"Ecommerce/utils"
 	"errors"
 	"fmt"
@@ -10,25 +11,18 @@ import (
 	"time"
 )
 
-
-
-// In this variables In-memory OTP store
-var otpStore = make(map[string]OTPData)
-
-// These are the Custom Errors
+var otpStore = make(map[string]Users.OTPData)
 var (
-	ErrEmailRequired           = errors.New("EMAIL_REQUIRED")
-	ErrInvalidEmail            = errors.New("INVALID_EMAIL_FORMAT")
-	ErrInvalidOTP              = errors.New("INVALID_OTP")
-	ErrFieldsMissing           = errors.New("FIELDS_MISSING")
-	ErrOTPExpired              = errors.New("OTP_EXPIRED")
-	ErrOTPNotFound             = errors.New("OTP_NOT_FOUND")
-	ErrUserNotFound            = errors.New("USER_NOT_FOUND")
-	ErrInvalidPassword         = errors.New("INVALID_PASSWORD")
-	
+	ErrEmailRequired   = errors.New("EMAIL_REQUIRED")
+	ErrInvalidEmail    = errors.New("INVALID_EMAIL_FORMAT")
+	ErrOTPExpired      = errors.New("OTP_EXPIRED")
+	ErrOTPNotFound     = errors.New("OTP_NOT_FOUND")
+	ErrInvalidOTP      = errors.New("INVALID_OTP")
+	ErrFieldsMissing   = errors.New("FIELDS_MISSING")
+	ErrUserNotFound    = errors.New("USER_NOT_FOUND")
+	ErrInvalidPassword = errors.New("INVALID_PASSWORD")
 )
 
-// this function is for Email validation
 func isValidEmail(email string) bool {
 	_, err := mail.ParseAddress(email)
 	return err == nil
@@ -53,7 +47,7 @@ func SendOTPService(email string) error {
 
 	otp := generateOTP()
 
-	otpStore[email] = OTPData{
+	otpStore[email] = Users.OTPData{
 		Code:      otp,
 		ExpiresAt: time.Now().Add(40 * time.Second), //  expiry time of OTP
 	}
@@ -84,9 +78,7 @@ func verifyOTP(email, otp string) error {
 
 	return nil
 }
-
-// This fucntion is created for verify and register the user
-func VerifyOTPAndRegister(user *User, otp string) error {
+func VerifyOTPAndRegister(user *Users.User, otp string) error {
 
 	if user.Name == "" ||
 		user.Email == "" ||
@@ -113,15 +105,10 @@ func VerifyOTPAndRegister(user *User, otp string) error {
 
 	user.Password = hashedPassword
 
-	err = CreateUser(user)
+	err = Users.CreateUser(user)
 
 	// Remove OTP after success
 	delete(otpStore, user.Email)
 
 	return nil
 }
-
-
-
-
- 

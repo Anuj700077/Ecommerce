@@ -2,8 +2,9 @@ package router
 
 import (
 	products "Ecommerce/Products"
-	users "Ecommerce/Users"
+
 	adminlogin "Ecommerce/Users/adminLogin"
+	otpandregister "Ecommerce/Users/otpAndRegister"
 	userlogin "Ecommerce/Users/userLogin"
 
 	"log"
@@ -26,7 +27,7 @@ func SetupRouter() *gin.Engine {
 
 	api := r.Group("/api")
 
-	users.UserRoutes(api)
+	otpandregister.UserRoutes(api)
 	userlogin.Userlogin(api)
 	adminlogin.UserLogin(api)
 	products.ProductRoutes(api)
