@@ -6,5 +6,7 @@ func UserRoutes(r *gin.RouterGroup) {
 
 	r.POST("/send-otp", SendOTP)
 	r.POST("/verify-otp", VerifyOTPAndRegisterHandler)
-	r.POST("/login", LoginHandler)
+	
+	
+
 }

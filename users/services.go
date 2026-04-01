@@ -10,19 +10,22 @@ import (
 	"time"
 )
 
+
+
 // In this variables In-memory OTP store
 var otpStore = make(map[string]OTPData)
 
 // These are the Custom Errors
 var (
-	ErrEmailRequired   = errors.New("EMAIL_REQUIRED")
-	ErrInvalidEmail    = errors.New("INVALID_EMAIL_FORMAT")
-	ErrInvalidOTP      = errors.New("INVALID_OTP")
-	ErrFieldsMissing   = errors.New("FIELDS_MISSING")
-	ErrOTPExpired      = errors.New("OTP_EXPIRED")
-	ErrOTPNotFound     = errors.New("OTP_NOT_FOUND")
-	ErrUserNotFound    = errors.New("USER_NOT_FOUND")
-	ErrInvalidPassword = errors.New("INVALID_PASSWORD")
+	ErrEmailRequired           = errors.New("EMAIL_REQUIRED")
+	ErrInvalidEmail            = errors.New("INVALID_EMAIL_FORMAT")
+	ErrInvalidOTP              = errors.New("INVALID_OTP")
+	ErrFieldsMissing           = errors.New("FIELDS_MISSING")
+	ErrOTPExpired              = errors.New("OTP_EXPIRED")
+	ErrOTPNotFound             = errors.New("OTP_NOT_FOUND")
+	ErrUserNotFound            = errors.New("USER_NOT_FOUND")
+	ErrInvalidPassword         = errors.New("INVALID_PASSWORD")
+	
 )
 
 // this function is for Email validation
@@ -37,7 +40,7 @@ func generateOTP() string {
 	return fmt.Sprintf("%06d", rand.Intn(1000000))
 }
 
-// Here in this The OTP will send
+// Here in this function The OTP will send
 func SendOTPService(email string) error {
 
 	if email == "" {
@@ -52,7 +55,7 @@ func SendOTPService(email string) error {
 
 	otpStore[email] = OTPData{
 		Code:      otp,
-		ExpiresAt: time.Now().Add(30 * time.Second), // ⏳ expiry
+		ExpiresAt: time.Now().Add(40 * time.Second), //  expiry time of OTP
 	}
 
 	log.Println("OTP for", email, "is:", otp)
@@ -102,8 +105,7 @@ func VerifyOTPAndRegister(user *User, otp string) error {
 		return err
 	}
 
-	
-	// Hash password before saving
+	//In this line password hashing technique done
 	hashedPassword, err := utils.HashPassword(user.Password)
 	if err != nil {
 		return err
@@ -119,27 +121,7 @@ func VerifyOTPAndRegister(user *User, otp string) error {
 	return nil
 }
 
-func LoginService(email, password string) (*User, error) {
-
-	if email == "" || password == "" {
-		return nil, ErrFieldsMissing
-	}
-
-	if !isValidEmail(email) {
-		return nil, ErrInvalidEmail
-	}
-
-	// check user exists
-	user, err := GetUserByEmail(email)
-	if err != nil {
-		return nil, ErrUserNotFound
-	}
-
-	// check password (simple compare for now)
-	if !utils.CheckPasswordHash(password, user.Password) {
-	return nil, ErrInvalidPassword
-}
 
 
-	return user, nil
-}
+
+ 

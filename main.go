@@ -11,7 +11,6 @@ import (
 
 func main() {
 
-	// Load ENV
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Failed to load .env file: %v", err)
@@ -19,13 +18,9 @@ func main() {
 
 	log.Println("Environment variables loaded")
 
-	// Connect Database
 	database.ConnectDatabase()
-
 	database.CreateTables()
-	// Setup Router
-	r := router.SetupRouter()
 
-	// Start Server
+	r := router.SetupRouter()
 	router.StartServer(r)
 }
