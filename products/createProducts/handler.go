@@ -1,6 +1,7 @@
 package Products
 
 import (
+	"Ecommerce/Products"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -8,7 +9,7 @@ import (
 
 func CreateProducts(c *gin.Context) {
 
-	var product Product
+	var product Products.Product
 
 	if err := c.ShouldBindJSON(&product); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
@@ -31,25 +32,5 @@ func CreateProducts(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Product created successfully",
-	})
-}
-
-func GetAllProducts(c *gin.Context) {
-
-	products, err := GetProduct()
-	if err != nil {
-
-		if err == ErrNoProductsFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "No products available"})
-			return
-		}
-
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch products"})
-		return
-	}
-
-	
-	c.JSON(http.StatusOK, gin.H{
-		"products": products,
 	})
 }

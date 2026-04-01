@@ -9,4 +9,4 @@ type Product struct {
 	Price       float64   `json:"price"`
 	CreatedAt   time.Time `json:"created_at"`
 	
-}
+}   
