@@ -6,7 +6,9 @@ import (
 	userlogin "Ecommerce/Users/userLogin"
 
 	createProducts "Ecommerce/Products/createProducts"
+	editProducts "Ecommerce/Products/editProducts"
 	getProducts "Ecommerce/Products/getProducts"
+
 	"log"
 	"os"
 
@@ -33,6 +35,7 @@ func SetupRouter() *gin.Engine {
 
 	createProducts.ProductRoutes(api)
 	getProducts.ProductRoutes(api)
+	editProducts.ProductRoutes(api)
 
 	return r
 }
