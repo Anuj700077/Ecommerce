@@ -24,7 +24,7 @@ func ConnectDatabase() {
 	dbname := os.Getenv("DB_NAME")
 	sslmode := os.Getenv("DB_SSLMODE")
 
-	// 🔹 Step 1: Connect to default postgres DB
+	//  Step 1: Connect to default postgres DB
 	psqlInfo := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=postgres port=%s sslmode=%s",
 		host, user, password, port, sslmode,
@@ -35,13 +35,13 @@ func ConnectDatabase() {
 		log.Fatal("Failed to connect PostgreSQL:", err)
 	}
 
-	// 🔹 Check connection
+	//  Check connection
 	err = sqlDB.Ping()
 	if err != nil {
 		log.Fatal("Database not reachable:", err)
 	}
 
-	// 🔹 Create DB if not exists
+	//  Create DB if not exists
 	_, err = sqlDB.Exec("CREATE DATABASE " + dbname)
 	if err != nil && !strings.Contains(err.Error(), "already exists") {
 		log.Fatal("Failed to create database:", err)
@@ -49,7 +49,7 @@ func ConnectDatabase() {
 
 	sqlDB.Close()
 
-	// 🔹 Step 2: Connect to actual DB using GORM
+	//  Step 2: Connect to actual DB using GORM
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
 		host, user, password, dbname, port, sslmode,
@@ -70,7 +70,7 @@ func ConnectDatabase() {
 
 	SQLDB = sqlDB2
 
-	// 🔹 Connection pool (important)
+	//  Connection pool (important)
 	SQLDB.SetMaxOpenConns(10)
 	SQLDB.SetMaxIdleConns(5)
 
@@ -83,6 +83,7 @@ func CreateTables() {
 		log.Fatal("SQLDB not initialized")
 	}
 
+	// USERS TABLE
 	userQuery := `
 	CREATE TABLE IF NOT EXISTS users (
 		id SERIAL PRIMARY KEY,
@@ -99,19 +100,42 @@ func CreateTables() {
 		log.Fatal("Failed to create users table:", err)
 	}
 
+	// PRODUCTS TABLE
 	productQuery := `
-CREATE TABLE IF NOT EXISTS products (
-	id SERIAL PRIMARY KEY,
-	name TEXT NOT NULL,
-	description TEXT,
-	price INT NOT NULL,
-	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-`
+	CREATE TABLE IF NOT EXISTS products (
+		id SERIAL PRIMARY KEY,
+		name TEXT NOT NULL,
+		description TEXT,
+		price INT NOT NULL,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+	`
 
 	_, err = SQLDB.Exec(productQuery)
 	if err != nil {
 		log.Fatal("Failed to create products table:", err)
+	}
+
+	// ADDRESS TABLE (Linked with Users)
+	addressQuery := `
+	CREATE TABLE IF NOT EXISTS addresses (
+		id SERIAL PRIMARY KEY,
+		user_id INT NOT NULL,
+		address1 TEXT NOT NULL,
+		pincode TEXT NOT NULL,
+		city TEXT NOT NULL,
+		country TEXT NOT NULL,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		CONSTRAINT fk_user
+			FOREIGN KEY(user_id)
+			REFERENCES users(id)
+			ON DELETE CASCADE
+	);
+	`
+
+	_, err = SQLDB.Exec(addressQuery)
+	if err != nil {
+		log.Fatal("Failed to create addresses table:", err)
 	}
 
 	log.Println("Tables created successfully")

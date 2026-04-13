@@ -5,6 +5,9 @@ import (
 	"Ecommerce/utils"
 	"errors"
 	"net/mail"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var (
@@ -31,15 +34,31 @@ func LoginService(email, password string) (*Users.User, error) {
 
 	// check user exists
 	user, err := Users.GetUserByEmail(email)
-
 	if err != nil {
 		return nil, ErrUserNotFound
 	}
 
-	// check password (simple compare for now)
+	// check password
 	if !utils.CheckPasswordHash(password, user.Password) {
 		return nil, ErrInvalidPassword
 	}
 
 	return user, nil
+}
+
+//
+//  NEW FUNCTION: Generate JWT Token
+//
+func GenerateToken(user *Users.User) (string, error) {
+
+	claims := jwt.MapClaims{
+		"user_id": user.ID,     
+		"email":   user.Email,
+		"role":    user.Role,
+		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	return token.SignedString(utils.SecretKey)
 }
