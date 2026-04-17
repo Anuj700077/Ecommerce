@@ -11,5 +11,5 @@ func AddressRoutes(r *gin.RouterGroup) {
 	auth := r.Group("/address")
 	auth.Use(middleware.AuthMiddleware())
 
-	auth.PUT("/:id", UpdateAddressHandler)
+	auth.GET("/", GetAddressHandler)
 }
