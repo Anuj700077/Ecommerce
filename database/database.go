@@ -139,4 +139,32 @@ func CreateTables() {
 	}
 
 	log.Println("Tables created successfully")
+
+	// CART TABLE
+	cartQuery := `
+CREATE TABLE IF NOT EXISTS cart (
+	id SERIAL PRIMARY KEY,
+	user_id INT NOT NULL,
+	product_id INT NOT NULL,
+	product_name TEXT NOT NULL,
+	product_price INT NOT NULL,
+	quantity INT NOT NULL DEFAULT 1,
+	total_price INT NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT fk_user_cart
+		FOREIGN KEY(user_id)
+		REFERENCES users(id)
+		ON DELETE CASCADE,
+	CONSTRAINT fk_product_cart
+		FOREIGN KEY(product_id)
+		REFERENCES products(id)
+		ON DELETE CASCADE
+);
+`
+
+	_, err = SQLDB.Exec(cartQuery)
+	if err != nil {
+		log.Fatal("Failed to create cart table:", err)
+	}
+
 }

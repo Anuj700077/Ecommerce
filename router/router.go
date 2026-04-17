@@ -11,10 +11,12 @@ import (
 	getProducts "Ecommerce/Products/getProducts"
 
 	addaddress "Ecommerce/address/addAddress"
-
 	deleteaddress "Ecommerce/address/deleteAddress"
 	editaddress "Ecommerce/address/editAddress"
 	getaddress "Ecommerce/address/getAddress"
+
+	addproductincart "Ecommerce/cart/addProductInCart"
+	getcart "Ecommerce/cart/getCart"
 
 	"log"
 	"os"
@@ -49,6 +51,9 @@ func SetupRouter() *gin.Engine {
 	getaddress.AddressRoutes(api)
 	editaddress.AddressRoutes(api)
 	deleteaddress.AddressRoutes(api)
+
+	addproductincart.CartRoutes(api)
+	getcart.CartRoutes(api)
 
 	return r
 }
